@@ -2,7 +2,6 @@ use crate::{Color, Image};
 use rand::Rng;
 use std::collections::HashSet;
 
-
 // Trait for anything that can be displayed (draws a pixel at x, y with a color)
 pub trait Displayable {
     fn display(&mut self, x: i32, y: i32, color: Color);
@@ -11,6 +10,8 @@ pub trait Displayable {
 // Trait for drawable shapes
 pub trait Drawable {
     fn draw(&self, image: &mut Image);
+
+    fn color(&self) -> Color;
 }
 
 // Represents a point in 2D space
@@ -37,8 +38,11 @@ impl Point {
 
 impl Drawable for Point {
     fn draw(&self, image: &mut Image) {
-        let color = get_random_color();
+        let color = self.color();
         image.display(self.x, self.y, color);
+    }
+    fn color(&self) -> Color {
+        get_random_color()
     }
 }
 
@@ -49,8 +53,11 @@ pub struct Line {
 }
 
 impl Line {
-    pub fn new(p1: Point, p2: Point) -> Self {
-        Self { start: p1, end: p2 }
+    pub fn new(p1: &Point, p2: &Point) -> Self {
+        Self {
+            start: *p1,
+            end: *p2,
+        }
     }
 
     // Random line from two random points
@@ -65,8 +72,11 @@ impl Line {
 
 impl Drawable for Line {
     fn draw(&self, image: &mut Image) {
-        let color = get_random_color();
+        let color = self.color();
         draw_line(image, &self.start, &self.end, &color);
+    }
+    fn color(&self) -> Color {
+        get_random_color()
     }
 }
 
@@ -77,8 +87,11 @@ pub struct Circle {
 }
 
 impl Circle {
-    pub fn new(center: Point, radius: i32) -> Self {
-        Self { center, radius }
+    pub fn new(center: &Point, radius: i32) -> Self {
+        Self {
+            center: *center,
+            radius,
+        }
     }
 
     // Random circle positioned fully inside image
@@ -96,9 +109,9 @@ impl Circle {
 
 impl Drawable for Circle {
     fn draw(&self, image: &mut Image) {
-        let color = get_random_color();
-        let perimeter = (self.radius.pow(2) as f32) * std::f32::consts::PI;
-        let inc = 360.0 / perimeter;
+        let color = self.color();
+        let surface = (self.radius.pow(2) as f32) * std::f32::consts::PI;
+        let inc = 360.0 / surface;
         let mut i: f32 = 0.0;
 
         let mut visited = HashSet::new();
@@ -116,9 +129,10 @@ impl Drawable for Circle {
             i += inc;
         }
     }
+    fn color(&self) -> Color {
+        get_random_color()
+    }
 }
-
-
 
 // Rectangle represented by 4 corner points
 pub struct Rectangle {
@@ -132,13 +146,8 @@ impl Rectangle {
     pub fn new(p1: &Point, p2: &Point) -> Self {
         let x_min = p1.x.min(p2.x);
         let y_min = p1.y.min(p2.y);
-        let mut x_max = p1.x.max(p2.x);
+        let x_max = p1.x.max(p2.x);
         let y_max = p1.y.max(p2.y);
-
-        // If it's a square, shift right to make it a rectangle
-        if (x_max - x_min).abs() == (y_max - y_min).abs() {
-            x_max += 50;
-        }
 
         Self {
             top_left: Point { x: x_min, y: y_min },
@@ -147,30 +156,19 @@ impl Rectangle {
             bottom_left: Point { x: x_min, y: y_max },
         }
     }
-
-    // Generate random rectangle from two points
-    pub fn random(width: i32, height: i32) -> Self {
-        let mut rng = rand::thread_rng();
-        let x1 = rng.gen_range(0..width);
-        let y1 = rng.gen_range(0..height);
-        let x2 = rng.gen_range(x1..width);
-        let y2 = rng.gen_range(y1..height);
-        Self::new(&Point::new(x1, y1), &Point::new(x2, y2))
-    }
 }
 
 impl Drawable for Rectangle {
     fn draw(&self, image: &mut Image) {
         // Draw rectangle edges using four lines
-        let top = Line::new(self.top_left, self.top_right);
-        let right = Line::new(self.top_right, self.bottom_right);
-        let bottom = Line::new(self.bottom_right, self.bottom_left);
-        let left = Line::new(self.bottom_left, self.top_left);      
-
-        top.draw(image);
-        right.draw(image);
-        bottom.draw(image);
-        left.draw(image);
+        let color = self.color();
+        draw_line(image, &self.top_left, &self.top_right, &color);
+        draw_line(image, &self.top_right, &self.bottom_right, &color);
+        draw_line(image, &self.bottom_right, &self.bottom_left, &color);
+        draw_line(image, &self.bottom_left, &self.top_left, &color);
+    }
+    fn color(&self) -> Color {
+        get_random_color()
     }
 }
 
@@ -189,23 +187,18 @@ impl Triangle {
             p3: *p3,
         }
     }
-
-    pub fn random(width: i32, height: i32) -> Self {
-        let _rng = rand::thread_rng();
-        let p1 = Point::random(width, height);
-        let p2 = Point::random(width, height);
-        let p3 = Point::random(width, height);
-        Self::new(&p1, &p2, &p3)
-    }
 }
 
 impl Drawable for Triangle {
     fn draw(&self, image: &mut Image) {
-        let color = get_random_color();
+        let color = self.color();
         // Draw edges between the 3 triangle vertices
         draw_line(image, &self.p1, &self.p2, &color);
         draw_line(image, &self.p2, &self.p3, &color);
         draw_line(image, &self.p3, &self.p1, &color);
+    }
+    fn color(&self) -> Color {
+        get_random_color()
     }
 }
 
@@ -227,8 +220,6 @@ fn draw_line(image: &mut Image, start: &Point, end: &Point, color: &Color) {
         image.display(x.round() as i32, y.round() as i32, color.clone());
     }
 }
-
-
 
 // Generates a random bright RGB color
 pub fn get_random_color() -> Color {

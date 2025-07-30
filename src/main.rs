@@ -21,24 +21,9 @@ fn main() {
     );
     triangle.draw(&mut image);
 
-    for _ in 1..30 {
-        gs::Line::random(image.width, image.height).draw(&mut image);
-    }
-    for _ in 1..30 {
-        gs::Point::random(image.width, image.height).draw(&mut image);
-    }
-    for _ in 1..30 {
-        gs::Rectangle::random(image.width, image.height).draw(&mut image);
-    }
-    gs::Triangle::random(image.width, image.height).draw(&mut image);
-
-    for _ in 1..30 {
+    for _ in 1..50 {
         gs::Circle::random(image.width, image.height).draw(&mut image);
     }
-    for _ in 1..30 {
-        gs::Circle::random(image.width, image.height).draw(&mut image);
-    }
-    gs::Circle::new(gs::Point::new(500, 500), 100).draw(&mut image);
 
     raster::save(&image, "image.png").unwrap();
 }
