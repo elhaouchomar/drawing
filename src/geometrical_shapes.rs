@@ -97,9 +97,9 @@ impl Circle {
     // Random circle positioned fully inside image
     pub fn random(width: i32, height: i32) -> Self {
         let mut rng = rand::thread_rng();
-        let radius = rng.gen_range(10..50);
-        let x = rng.gen_range(radius..(width - radius));
-        let y = rng.gen_range(radius..(height - radius));
+        let radius = rng.gen_range(10..300);
+        let x = rng.gen_range(0..width);
+        let y = rng.gen_range(0..height);
         Self {
             center: Point { x, y },
             radius,
@@ -110,21 +110,21 @@ impl Circle {
 impl Drawable for Circle {
     fn draw(&self, image: &mut Image) {
         let color = self.color();
-        let surface = (self.radius.pow(2) as f32) * std::f32::consts::PI;
-        let inc = 360.0 / surface;
+        let circumference = 2.0 * std::f32::consts::PI * self.radius as f32;
+        let inc = 360.0 / circumference;
         let mut i: f32 = 0.0;
 
-        let mut visited = HashSet::new();
+         let mut visited = HashSet::new();
 
         while i <= 360.0 {
             let angle = i.to_radians();
             let x = (self.center.x as f32 + self.radius as f32 * angle.cos()).round() as i32;
             let y = (self.center.y as f32 + self.radius as f32 * angle.sin()).round() as i32;
 
-            // only draw if this (x, y) wasn't drawn before
-            if visited.insert((x, y)) {
+            //  only draw if this (x, y) wasn't drawn before
+             if visited.insert((x, y)) {
                 image.display(x, y, color.clone());
-            }
+             }
 
             i += inc;
         }
