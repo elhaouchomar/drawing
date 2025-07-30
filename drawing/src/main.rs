@@ -11,7 +11,7 @@ fn main() {
 
     gs::Point::random(image.width, image.height).draw(&mut image);
 
-    let rectangle = gs::Rectangle::new(&gs::Point::new(160, 160), &gs::Point::new(100, 10));
+    let rectangle = gs::Rectangle::new(&gs::Point::new(150, 300), &gs::Point::new(50, 60));
     rectangle.draw(&mut image);
 
     let triangle = gs::Triangle::new(
@@ -21,23 +21,32 @@ fn main() {
     );
     triangle.draw(&mut image);
 
-    for _ in 1..50 {
-        gs::Circle::random(image.width, image.height).draw(&mut image);
-    }
-
-        for _ in 1..10 {
-        gs::Point::random(image.width, image.height).draw(&mut image);
-    }
-    for _ in 1..10 {
+    for _ in 1..30 {
         gs::Line::random(image.width, image.height).draw(&mut image);
     }
+    for _ in 1..30 {
+        gs::Point::random(image.width, image.height).draw(&mut image);
+    }
+    for _ in 1..30 {
+        gs::Rectangle::random(image.width, image.height).draw(&mut image);
+    }
+    gs::Triangle::random(image.width, image.height).draw(&mut image);
+
+    for _ in 1..30 {
+        gs::Circle::random(image.width, image.height).draw(&mut image);
+    }
+    for _ in 1..30 {
+        gs::Circle::random(image.width, image.height).draw(&mut image);
+    }
+    gs::Circle::new(gs::Point::new(500, 500), 100).draw(&mut image);
+
     raster::save(&image, "image.png").unwrap();
 }
 
 impl Displayable for Image {
-    fn display(&mut self, x: i32, y: i32, color: &Color) {
+    fn display(&mut self, x: i32, y: i32, color: Color) {
         if x >= 0 && x < self.width && y >= 0 && y < self.height {
-            self.set_pixel(x, y, color.clone()).unwrap();
+            self.set_pixel(x, y, color).unwrap();
         }
     }
 }
